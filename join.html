@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>イベントに参加 - CrewBoard</title>
+<meta name="robots" content="noindex">
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif;
+        line-height: 1.7;
+        color: #1a1a1a;
+        background: #fafafa;
+        padding: 32px 20px 56px;
+    }
+    .wrap { max-width: 440px; margin: 0 auto; }
+    .app { font-size: 0.85em; color: #888; letter-spacing: .04em; }
+    h1 { font-size: 1.35em; margin: 4px 0 20px; }
+
+    .code-card {
+        background: #fff;
+        border: 1px solid #e3e3e3;
+        border-radius: 12px;
+        padding: 20px 16px;
+        text-align: center;
+        margin-bottom: 12px;
+    }
+    .code-label { font-size: .8em; color: #777; margin-bottom: 6px; }
+    .code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 2em;
+        font-weight: 700;
+        letter-spacing: .08em;
+        word-break: break-all;
+    }
+    .copy {
+        margin-top: 12px;
+        background: #eef4ff;
+        color: #2563EB;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 18px;
+        font-size: .9em;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+    }
+    .copy:active { background: #dbe7ff; }
+
+    .btn {
+        display: block;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 10px;
+        padding: 14px;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+    .btn-primary { background: #3B82F6; color: #fff; }
+    .btn-secondary { background: #fff; color: #3B82F6; border: 1px solid #c7dbff; }
+
+    .steps {
+        background: #fff;
+        border: 1px solid #e3e3e3;
+        border-radius: 12px;
+        padding: 16px 16px 16px 34px;
+        margin-top: 20px;
+        font-size: .9em;
+    }
+    .steps li { margin-bottom: 6px; }
+    .steps li:last-child { margin-bottom: 0; }
+
+    .note { font-size: .82em; color: #777; margin-top: 18px; }
+    .error {
+        background: #fff4f4;
+        border: 1px solid #f3c9c9;
+        color: #a33;
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 16px;
+        font-size: .92em;
+    }
+    footer { margin-top: 32px; font-size: .8em; color: #999; text-align: center; }
+    footer a { color: #999; }
+
+    @media (prefers-color-scheme: dark) {
+        body { background: #121212; color: #ececec; }
+        .code-card, .steps { background: #1d1d1d; border-color: #333; }
+        .btn-secondary { background: #1d1d1d; border-color: #2d4a7a; }
+        .code-label, .note, footer { color: #999; }
+        .copy { background: #1e2d4a; color: #7aa7f5; }
+        .error { background: #2a1a1a; border-color: #5a3030; color: #e58b8b; }
+    }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <p class="app">CrewBoard</p>
+    <h1>イベントに招待されています</h1>
+
+    <div id="no-code" class="error" hidden>
+        共有コードが見つかりませんでした。招待された方から届いたリンクをそのまま開くか、
+        コードを直接アプリに入力してください。
+    </div>
+
+    <div id="code-card" class="code-card" hidden>
+        <p class="code-label">参加コード</p>
+        <p class="code" id="code"></p>
+        <button class="copy" id="copy" type="button">コードをコピー</button>
+    </div>
+
+    <a class="btn btn-primary" id="open-app" href="#">アプリで開く</a>
+    <a class="btn btn-secondary" href="https://apps.apple.com/jp/app/crewboard/id6765751437">App Store で入手（無料）</a>
+
+    <ol class="steps">
+        <li>アプリを入れていない場合は「App Store で入手」からインストールします。</li>
+        <li>CrewBoard を開き、イベント一覧の右上「…」→「共有コードで参加」を選びます。</li>
+        <li>表示名を入れ、上のコードを入力すれば参加できます。</li>
+    </ol>
+
+    <p class="note">
+        コードには有効期限があります（通常 24 時間）。期限が切れていた場合は、招待した方にもう一度発行してもらってください。
+        アカウントの作成は不要です。
+    </p>
+
+    <footer>
+        <a href="privacy-policy.html">プライバシーポリシー</a> ・
+        <a href="support.html">サポート</a>
+    </footer>
+</div>
+
+<script>
+// GA4 の測定 ID。**ここに入れるまで計測は動かない**（空なら読み込みごとスキップ）。
+// これが無いと「リンクは開いたがインストールしなかった」層が見えない。
+// specs/growth.md §2
+var GA_MEASUREMENT_ID = 'G-74N8HVFR3W';
+
+(function () {
+    if (!GA_MEASUREMENT_ID) return;
+    var tag = document.createElement('script');
+    tag.async = true;
+    tag.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_MEASUREMENT_ID;
+    document.head.appendChild(tag);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    gtag('js', new Date());
+    gtag('config', GA_MEASUREMENT_ID);
+})();
+
+/// アプリ側の Telemetry と同じ名前にそろえてある。
+/// **コードそのものは送らない**（招待の中身は個人情報に近い）。
+function track(name, params) {
+    if (typeof gtag === 'function') gtag('event', name, params || {});
+}
+
+(function () {
+    var params = new URLSearchParams(window.location.search);
+    var raw = (params.get('code') || '').toUpperCase().replace(/[^0-9A-Z]/g, '');
+
+    var openApp = document.getElementById('open-app');
+
+    if (raw.length !== 8) {
+        document.getElementById('no-code').hidden = false;
+        openApp.setAttribute('href', 'crewboard://join');
+        track('invite_page_opened', { has_code: false });
+        return;
+    }
+    track('invite_page_opened', { has_code: true });
+
+    var pretty = raw.slice(0, 4) + '-' + raw.slice(4);
+    document.getElementById('code').textContent = pretty;
+    document.getElementById('code-card').hidden = false;
+    openApp.setAttribute('href', 'crewboard://join?code=' + raw);
+    openApp.addEventListener('click', function () { track('invite_open_app_tapped'); });
+    document.querySelector('.btn-secondary')
+        .addEventListener('click', function () { track('invite_store_tapped'); });
+
+    var copy = document.getElementById('copy');
+    copy.addEventListener('click', function () {
+        // クリップボード API は HTTPS でのみ使える。失敗しても画面は壊さない。
+        var done = function () {
+            copy.textContent = 'コピーしました';
+            setTimeout(function () { copy.textContent = 'コードをコピー'; }, 1600);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(pretty).then(done, function () {});
+        }
+        track('invite_code_copied');
+    });
+})();
+</script>
+</body>
+</html>
