@@ -1,23 +1,454 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CrewBoard</title>
-    <style>
-        body { font-family: -apple-system, sans-serif; text-align: center; padding: 60px 20px; background: #fafafa; color: #333; }
-        h1 { font-size: 1.5em; margin-bottom: 8px; }
-        p { color: #666; margin-bottom: 24px; }
-        a { color: #3B82F6; text-decoration: none; margin: 0 12px; }
-        a:hover { text-decoration: underline; }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CrewBoard — イベント現場の配置表を、チーム全員で</title>
+<meta name="description" content="ライブ・イベント・展示会の現場で、スタッフの配置表を組み、当日そのまま回すためのアプリ。招待リンクを送るだけで、最大20人のチーム全員と配置表を共有できます。iPhone / iPad、無料。">
+<link rel="icon" href="img/icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="CrewBoard — イベント現場の配置表を、チーム全員で">
+<meta property="og:description" content="前日に作った配置表は、当日いちばん変わる。その変更を、現場の全員に届けます。">
+<meta property="og:image" content="img/hero.png">
+<style>
+:root {
+    --bg: #fbfaf8;
+    --ink: #16181c;
+    --sub: #5f6672;
+    --rule: #ded9d1;
+    --rule-strong: #16181c;
+    --accent: #1d4ed8;
+    --card: #ffffff;
+    --band: #0e1117;
+    --band-ink: #f2f0ec;
+    --band-sub: #9aa1ad;
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #121316;
+        --ink: #ecebe7;
+        --sub: #9aa0aa;
+        --rule: #2d3036;
+        --rule-strong: #4a4e57;
+        --accent: #8fb0ff;
+        --card: #191b1f;
+        --band: #0a0c10;
+        --band-ink: #f2f0ec;
+        --band-sub: #9aa1ad;
+    }
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans",
+                 "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+    font-feature-settings: "palt" 1;
+    line-height: 1.85;
+    letter-spacing: .02em;
+    font-size: 16px;
+}
+
+.mincho {
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho",
+                 "Noto Serif JP", serif;
+    font-feature-settings: "palt" 1;
+}
+
+a { color: inherit; }
+
+.wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+.narrow { max-width: 680px; }
+
+/* ── 見出しラベル ── */
+.label {
+    font-size: .68rem;
+    letter-spacing: .22em;
+    color: var(--sub);
+    text-transform: uppercase;
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 22px;
+}
+.label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+}
+
+h2 {
+    font-size: clamp(1.3rem, 3.4vw, 1.7rem);
+    font-weight: 600;
+    line-height: 1.6;
+    letter-spacing: .03em;
+    margin-bottom: 28px;
+}
+
+section { padding: 72px 0; border-top: 1px solid var(--rule); }
+
+/* ── ヘッダー ── */
+header {
+    border-bottom: 1px solid var(--rule);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+}
+.bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 58px;
+}
+.bar img { width: 26px; height: 26px; border-radius: 6px; }
+.bar .name { font-weight: 600; letter-spacing: .08em; font-size: .95rem; }
+.bar nav { margin-left: auto; display: flex; gap: 20px; font-size: .82rem; color: var(--sub); }
+.bar nav a { text-decoration: none; }
+.bar nav a:hover { color: var(--ink); }
+
+/* ── ヒーロー ── */
+.hero { padding: 84px 0 72px; }
+.hero h1 {
+    font-size: clamp(1.9rem, 6.4vw, 3.1rem);
+    font-weight: 600;
+    line-height: 1.52;
+    letter-spacing: .01em;
+    margin-bottom: 30px;
+}
+.hero .lead {
+    color: var(--sub);
+    font-size: 1.02rem;
+    max-width: 34em;
+    margin-bottom: 36px;
+}
+.cta { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 22px; }
+.btn {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--bg);
+    text-decoration: none;
+    padding: 13px 26px;
+    border-radius: 2px;
+    font-size: .92rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+}
+.btn:hover { opacity: .86; }
+.price-note { font-size: .82rem; color: var(--sub); }
+
+/* ── 3 ステップ ── */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--rule-strong); }
+.step { padding: 26px 22px 30px; border-bottom: 1px solid var(--rule); border-right: 1px solid var(--rule); }
+.step:last-child { border-right: 0; }
+.step .n {
+    font-size: .7rem; letter-spacing: .2em; color: var(--accent);
+    display: block; margin-bottom: 12px; font-weight: 600;
+}
+.step h3 { font-size: 1rem; font-weight: 600; margin-bottom: 8px; line-height: 1.6; }
+.step p { font-size: .86rem; color: var(--sub); line-height: 1.8; }
+
+/* ── 問題提起 ── */
+.problems { list-style: none; border-top: 1px solid var(--rule-strong); }
+.problems li {
+    border-bottom: 1px solid var(--rule);
+    padding: 18px 0 18px 1.6em;
+    text-indent: -1.6em;
+    font-size: .94rem;
+    line-height: 1.8;
+}
+.problems li::before { content: "—"; color: var(--accent); margin-right: .7em; }
+
+/* ── 機能 ── */
+.feats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; border-top: 1px solid var(--rule); }
+.feat { padding: 26px 24px 28px 0; border-bottom: 1px solid var(--rule); }
+.feat:nth-child(odd) { padding-right: 36px; }
+.feat:nth-child(even) { padding-left: 28px; border-left: 1px solid var(--rule); }
+.feat h3 { font-size: .98rem; font-weight: 600; margin-bottom: 10px; }
+.feat ul { list-style: none; font-size: .86rem; color: var(--sub); line-height: 1.95; }
+.feat li::before { content: "—"; margin-right: .5em; color: var(--rule-strong); }
+
+/* ── 画面 ── */
+.shots { background: var(--band); color: var(--band-ink); border-top: 1px solid var(--rule); }
+.shots .label { color: var(--band-sub); }
+.shots .label::after { background: #2a2e36; }
+.shots h2 { color: var(--band-ink); }
+.gallery {
+    display: flex; gap: 16px; overflow-x: auto; padding-bottom: 10px;
+    scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+}
+.gallery figure { flex: 0 0 auto; width: 206px; scroll-snap-align: start; }
+.gallery img { width: 100%; display: block; border-radius: 10px; }
+.gallery figcaption { font-size: .76rem; color: var(--band-sub); margin-top: 10px; letter-spacing: .06em; }
+
+/* ── 料金 ── */
+table.price { width: 100%; border-collapse: collapse; font-size: .88rem; }
+table.price th, table.price td { padding: 13px 10px; border-bottom: 1px solid var(--rule); text-align: left; }
+table.price thead th { border-bottom: 1px solid var(--rule-strong); font-size: .76rem; letter-spacing: .12em; color: var(--sub); font-weight: 600; }
+table.price td:not(:first-child), table.price thead th:not(:first-child) { text-align: center; width: 26%; }
+table.price .pro { color: var(--accent); font-weight: 600; }
+
+/* ── FAQ ── */
+.faq { border-top: 1px solid var(--rule); }
+.faq details { border-bottom: 1px solid var(--rule); }
+.faq summary {
+    padding: 18px 0; cursor: pointer; font-size: .94rem; font-weight: 600;
+    list-style: none; display: flex; align-items: baseline; gap: 12px;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::before { content: "Q"; font-size: .72rem; letter-spacing: .1em; color: var(--accent); }
+.faq p { padding: 0 0 20px 26px; font-size: .88rem; color: var(--sub); }
+
+/* ── 末尾 ── */
+.closing { text-align: center; padding: 84px 0; }
+.closing p { font-size: clamp(1.1rem, 3.6vw, 1.5rem); line-height: 1.75; margin-bottom: 34px; }
+.closing .cta { justify-content: center; }
+
+footer { border-top: 1px solid var(--rule); padding: 34px 0 54px; font-size: .8rem; color: var(--sub); }
+footer nav { display: flex; flex-wrap: wrap; gap: 18px; margin-bottom: 16px; }
+footer nav a { text-decoration: none; }
+footer nav a:hover { color: var(--ink); }
+
+@media (max-width: 640px) {
+    section { padding: 56px 0; }
+    .hero { padding: 56px 0 48px; }
+    .steps { grid-template-columns: 1fr; }
+    .step { border-right: 0; }
+    .feats { grid-template-columns: 1fr; }
+    .feat, .feat:nth-child(odd), .feat:nth-child(even) {
+        padding: 24px 0; border-left: 0;
+    }
+    .bar nav { gap: 14px; font-size: .76rem; }
+}
+</style>
 </head>
 <body>
-    <h1>CrewBoard</h1>
-    <p>イベント配置管理アプリ</p>
-    <nav>
-        <a href="privacy-policy.html">プライバシーポリシー</a>
-        <a href="support.html">サポート</a>
-    </nav>
+
+<header>
+    <div class="wrap bar">
+        <img src="img/icon.png" alt="">
+        <span class="name">CrewBoard</span>
+        <nav>
+            <a href="#sharing">共有</a>
+            <a href="#features">機能</a>
+            <a href="#price">料金</a>
+            <a href="support.html">サポート</a>
+        </nav>
+    </div>
+</header>
+
+<div class="wrap hero">
+    <h1 class="mincho">前日に作った配置表は、<br>当日いちばん変わる。</h1>
+    <p class="lead">
+        CrewBoard は、ライブ・イベント・展示会の現場で、スタッフの配置表を組み、
+        当日そのまま回すためのアプリです。組んだ配置表は、チーム全員で共有できます。
+    </p>
+    <div class="cta">
+        <a class="btn" href="https://apps.apple.com/jp/app/crewboard/id6765751437" data-store="hero">App Store で入手</a>
+        <span class="price-note">無料　/　CrewBoard Pro 買い切り ¥1,000　/　iPhone・iPad</span>
+    </div>
+</div>
+
+<section id="sharing">
+    <div class="wrap">
+        <div class="label">Sharing</div>
+        <h2>招待リンクを送るだけ。<br>配置を変えれば、その場で全員の画面に。</h2>
+
+        <div class="steps">
+            <div class="step">
+                <span class="n">01</span>
+                <h3>リンクかコードを送る</h3>
+                <p>招待リンク、または 8 桁のコード。現場なら画面を見せるだけでも渡せます。</p>
+            </div>
+            <div class="step">
+                <span class="n">02</span>
+                <h3>登録なしで参加できる</h3>
+                <p>受け取った人はアカウント登録が要りません。名前を入れるだけで入れます。1 イベントにつき最大 20 人。</p>
+            </div>
+            <div class="step">
+                <span class="n">03</span>
+                <h3>変更がその場で届く</h3>
+                <p>配置も休憩もメモも、書き換えた瞬間に全員の画面へ。更新は 5 分ぶんをまとめて 1 通だけ通知します。</p>
+            </div>
+        </div>
+
+        <ul class="problems narrow" style="margin-top:46px">
+            <li>「どれが最新か分からない」がなくなります。配置表は常に 1 つです。</li>
+            <li>当日の交代も、休憩の消化状況も、聞いて回らずに分かります。</li>
+            <li>参加する側は無料です。スタッフに費用の負担はありません。</li>
+        </ul>
+    </div>
+</section>
+
+<section id="features">
+    <div class="wrap">
+        <div class="label">Features</div>
+        <h2>配置を組んで、当日を回して、次の現場にそのまま持っていく。</h2>
+
+        <div class="feats">
+            <div class="feat">
+                <h3>配置を組む</h3>
+                <ul>
+                    <li>開場前・開場中・開演中・終演後のフェーズごとに切り替え</li>
+                    <li>ポジションは親子構造（「案内」の中に「101扉案内」）</li>
+                    <li>ドラッグ＆ドロップと複数選択。定員の過不足が一目で分かる</li>
+                    <li>フェーズ間で配置をコピー</li>
+                </ul>
+            </div>
+            <div class="feat">
+                <h3>全体を見る</h3>
+                <ul>
+                    <li>タイムラインで、誰がいつどこに入るかを時間軸で把握</li>
+                    <li>スタッフ別一覧で、1 人の全フェーズの動きを確認</li>
+                    <li>配置表を画像として書き出して配布</li>
+                    <li>横画面対応。ダークモード対応</li>
+                </ul>
+            </div>
+            <div class="feat">
+                <h3>当日を回す</h3>
+                <ul>
+                    <li>休憩の枠を作って、取得状況をその場でチェック</li>
+                    <li>入場者数などのカウント記録（時間帯ごとの累計つき）</li>
+                    <li>開場前・開演前のリマインダー</li>
+                    <li>決まったことを付箋メモに残す</li>
+                </ul>
+            </div>
+            <div class="feat">
+                <h3>繰り返し使う</h3>
+                <ul>
+                    <li>イベントテンプレートで、同じ構成を次の現場へ</li>
+                    <li>会場データベースに過去の会場を蓄積</li>
+                    <li>レギュラーメンバーの登録で毎回の入力を省略</li>
+                    <li>ロール（役職）のプリセットと色分け</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="shots">
+    <div class="wrap">
+        <div class="label">Screens</div>
+        <h2>画面</h2>
+        <div class="gallery">
+            <figure><img src="img/hero.png" alt="イベント一覧" loading="lazy"><figcaption>イベント一覧</figcaption></figure>
+            <figure><img src="img/assign.png" alt="配置管理" loading="lazy"><figcaption>配置管理</figcaption></figure>
+            <figure><img src="img/timeline.png" alt="タイムライン" loading="lazy"><figcaption>タイムライン</figcaption></figure>
+            <figure><img src="img/export.png" alt="画像書き出し" loading="lazy"><figcaption>画像書き出し</figcaption></figure>
+        </div>
+    </div>
+</section>
+
+<section id="price">
+    <div class="wrap narrow">
+        <div class="label">Pricing</div>
+        <h2>買い切り ¥1,000。月額はありません。</h2>
+
+        <table class="price">
+            <thead>
+                <tr><th>　</th><th>無料</th><th class="pro">Pro</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>配置・休憩・カウント・テンプレート・会場データベース</td><td>○</td><td>○</td></tr>
+                <tr><td>共有イベントへの<strong>参加</strong></td><td>制限なし</td><td>制限なし</td></tr>
+                <tr><td>1 イベントの参加人数</td><td>20 人</td><td>20 人</td></tr>
+                <tr><td>同時に持てる共有イベント</td><td>1 件</td><td class="pro">3 件</td></tr>
+                <tr><td>広告</td><td>あり</td><td class="pro">なし</td></tr>
+                <tr><td>イベント画像の共有</td><td>—</td><td class="pro">○</td></tr>
+                <tr><td>リマインダーを全員に共有</td><td>—</td><td class="pro">○</td></tr>
+            </tbody>
+        </table>
+
+        <p style="font-size:.84rem;color:var(--sub);margin-top:20px">
+            共有イベントへの参加は、Pro でなくても人数の制限なく使えます。
+            スタッフ側に費用はかかりません。
+        </p>
+    </div>
+</section>
+
+<section>
+    <div class="wrap narrow">
+        <div class="label">FAQ</div>
+        <h2>よくある質問</h2>
+        <div class="faq">
+            <details>
+                <summary>参加する側もアプリの購入が必要ですか</summary>
+                <p>不要です。App Store からの入手は無料で、アカウント登録もいりません。招待リンクを開いて名前を入れるだけで参加できます。</p>
+            </details>
+            <details>
+                <summary>Android には対応していますか</summary>
+                <p>現在は iPhone と iPad のみです（iOS / iPadOS 18.6 以降）。Android 端末のスタッフには、配置表を画像として書き出して渡す形になります。</p>
+            </details>
+            <details>
+                <summary>共有していないイベントもクラウドに保存されますか</summary>
+                <p>されません。共有していないイベントは端末の中にだけ保存されます。共有を開始したイベントのみ、サーバー（東京リージョン）に保存されます。</p>
+            </details>
+            <details>
+                <summary>共有を終了したら、作った配置表は消えますか</summary>
+                <p>消えません。共有を終了しても、退出しても、手元には同じ内容のイベントがそのまま残ります。</p>
+            </details>
+            <details>
+                <summary>共有を始めるのにアカウントは必要ですか</summary>
+                <p>共有を「開始する」側のみ、Apple でサインインが必要です。参加する側は不要です。アカウントはアプリ内の設定からいつでも削除できます。</p>
+            </details>
+        </div>
+    </div>
+</section>
+
+<div class="wrap closing">
+    <p class="mincho">配置表を、<br>現場の全員の手元に。</p>
+    <div class="cta">
+        <a class="btn" href="https://apps.apple.com/jp/app/crewboard/id6765751437" data-store="closing">App Store で入手</a>
+    </div>
+</div>
+
+<footer>
+    <div class="wrap">
+        <nav>
+            <a href="privacy-policy.html">プライバシーポリシー</a>
+            <a href="support.html">サポート</a>
+            <a href="https://apps.apple.com/jp/app/crewboard/id6765751437" data-store="footer">App Store</a>
+        </nav>
+        <div>© Ryuichi Shirakawa</div>
+    </div>
+</footer>
+
+<script>
+// join.html と同じ GA4 プロパティ。入口（この LP）から App Store までを
+// 1 本のファネルで見るため。specs/growth.md §2
+var GA_MEASUREMENT_ID = 'G-74N8HVFR3W';
+
+(function () {
+    if (!GA_MEASUREMENT_ID) return;
+    var tag = document.createElement('script');
+    tag.async = true;
+    tag.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_MEASUREMENT_ID;
+    document.head.appendChild(tag);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    gtag('js', new Date());
+    gtag('config', GA_MEASUREMENT_ID);
+})();
+
+function track(name, params) {
+    if (typeof gtag === 'function') gtag('event', name, params || {});
+}
+
+track('lp_opened', {});
+
+// どの位置のボタンが押されたかまで見る。先頭が効かないなら文面、
+// 末尾しか効かないなら長さの問題、と切り分けられる。
+Array.prototype.forEach.call(document.querySelectorAll('[data-store]'), function (a) {
+    a.addEventListener('click', function () {
+        track('lp_store_tapped', { position: a.getAttribute('data-store') });
+    });
+});
+</script>
+
 </body>
 </html>
